@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "name": "paper-main",
+  "title": "Research Paper Title",
+  "authors": [
+    "Author Name"
+  ],
+  "abstract": "Replace this text with a verified summary of the research question, method, results, and limitations. This document is a layout and workflow template, not a report of completed experiments.",
+  "repository_url": null,
+  "initialized": false
+}

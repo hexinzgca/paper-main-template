@@ -1,0 +1,23 @@
+# Generated manuscript and experiment outputs
+/build/
+/dist/
+*.typst-timing.json
+# Local environments and caches
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+# Never put credentials in version control
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# Local editor / OS state
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+# Do NOT ignore submodules/: Git must track its gitlinks.
