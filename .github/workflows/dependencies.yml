@@ -1,0 +1,44 @@
+name: Dependency checks
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dependencies:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      GIT_TERMINAL_PROMPT: '0'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          submodules: false
+      - name: Inspect before network operations
+        run: make check
+      - name: Retrieve only recorded pins
+        run: make submodules
+      - name: Validate initialized dependency state
+        run: make check-dependencies
+      - name: Run the declared lightweight code test
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -e submodules/code/.git ]]; then
+            make code-test
+          else
+            echo 'NOT RUN: code repository has not been configured.'
+          fi
+      - name: Record recursive checkout
+        run: make manifest
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dependency-provenance-${{ github.sha }}
+          path: build/provenance.json
+          if-no-files-found: error
+          retention-days: 14

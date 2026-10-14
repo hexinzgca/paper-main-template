@@ -1,0 +1,24 @@
+name: Bug or build failure
+description: Report a reproducible manuscript or tooling problem.
+title: "[Bug] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Exact reproduction steps
+      description: Include working directory, commit, command, and sanitized output.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment and dependency state
+      description: OS, Python, Git, Typst versions; submodule status. Do not include credentials.
+    validations:
+      required: true

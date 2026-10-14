@@ -1,0 +1,18 @@
+name: Research or manuscript task
+description: Define a scoped change and its evidence requirements.
+title: "[Task] "
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal and scope
+      description: State the question; distinguish code, experiment, and manuscript changes.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Acceptance criteria and required evidence
+      description: Commands, datasets, tolerances, mathematical or citation checks.
+    validations:
+      required: true

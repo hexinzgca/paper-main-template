@@ -1,0 +1,29 @@
+name: Render figures
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  figures:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      GIT_TERMINAL_PROMPT: '0'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          submodules: false
+      - run: make check
+      - run: make submodules
+      - run: make check-dependencies
+      # Intentionally BLOCKED until a real, documented rendering pipeline exists.
+      - run: make figures
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: generated-figures-${{ github.sha }}
+          path: build/figures/
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,69 @@
+name: Paper CI
+on:
+  push:
+    branches: [main]
+    tags: ['paper-*']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: paper-ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  paper:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      # Passed through the environment, never interpolated into executable shell.
+      BASE_REV: ${{ github.event.pull_request.base.sha || github.event.before }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          submodules: false
+          persist-credentials: false
+      - name: Check repository and committed blob sizes
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${BASE_REV:-}" || "$BASE_REV" =~ ^0+$ ]]; then
+            unset BASE_REV
+          fi
+          mkdir -p build
+          python3 scripts/manage.py check --history 2>&1 | tee build/check.log
+      - name: Test maintenance tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s tests -v 2>&1 | tee build/tests.log
+      - name: Read exact Typst version
+        id: typst
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(cat .typst-version)"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+      - uses: typst-community/setup-typst@fee4b65b091cc546f02ce3be15fad8760f38a108 # v5.3.0
+        with:
+          typst-version: ${{ steps.typst.outputs.version }}
+      - name: Compile manuscript
+        shell: bash
+        run: |
+          set -euo pipefail
+          make compile 2>&1 | tee build/compile.log
+      - name: Record actual checkout
+        run: make manifest
+      - name: Upload compiled paper and evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: paper-${{ github.sha }}
+          path: |
+            build/main.pdf
+            build/provenance.json
+            build/*.log
+          if-no-files-found: warn
+          retention-days: 14
